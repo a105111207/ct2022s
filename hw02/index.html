@@ -146,6 +146,9 @@
 		var unicode = ['BMP', 'SMP', 'SIP', 'TIP', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', 'SSP', 'PUA-A',
 			'PUA-B'
 		];
+		var pointSelected = true;
+		var points = 'null';
+		var clickcode = 0;
 		/** Your code goes here */
 		/***/
 
@@ -162,7 +165,7 @@
 				d3.select('#svg_text')
 					.html('');
 
-				var str = String.fromCodePoint(code_point);
+				var str = String.fromCodePoint(clickcode);
 				var font = openTypeFont;
 				var glyph = font.stringToGlyphs(str)[0];
 				var mkPath = function (commands, height) {
@@ -189,8 +192,12 @@
 							p.closePath();
 						}
 					}
+
+					points = c;
+
 					return [p, c]; //StrongghBaseLine用c可以寫
 				};
+
 				var svgPathObj = mkPath(glyph.path.commands, font.unitsPerEm);
 				var tmpPath = svgPathObj[0];
 				var svg3 = d3.select('#svg_image')
@@ -203,6 +210,15 @@
 				svg3.append('path')
 					.attr('d', tmpPath.toPathData())
 					.attr('class', 'font-svg');
+				if (pointSelected == false) {
+					svgPathObj[1].forEach(element => {
+						svg3.append('circle')
+							.attr('cx', element[0])
+							.attr('cy', element[1])
+							.attr('r', 20)
+							.attr('fill', 'red');
+					});
+				}
 
 				d3.select('#svg_text')
 					.html(svg3.node().outerHTML);
@@ -283,6 +299,7 @@
 						.attr("fill", "#ff0")
 						.attr("font-size", "24pt")
 						.attr("id", "tooltip_click");
+					clickcode = code_point;
 
 					d3.select(this)
 						.attr("fill", "orange");
@@ -371,7 +388,6 @@
 						')';
 				})
 				.on("mousemove", function () {
-					//console.log();
 					//Get this bar's x/y values, then augment for the tooltip
 					console.log(d3.mouse(this));
 					var xPosition = parseInt(d3.mouse(this)[0]);
@@ -429,6 +445,16 @@
 				build_plane_selection();
 				build_plane();
 
+
+				d3.select('#point-switch').on('change', function () {
+					if (pointSelected == true) {
+						pointSelected = false;
+						create_font_svg();
+					} else {
+						pointSelected = true;
+						create_font_svg();
+					}
+				});
 
 				/** autoload font data */
 				/** Your code goes here */
